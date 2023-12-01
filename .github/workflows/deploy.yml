@@ -6,6 +6,12 @@ jobs:
   python_unit_tests:
     runs-on: ubuntu-latest
     
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - "6379:6379"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -15,18 +21,21 @@ jobs:
         with:
           python-version: '3.x'
 
-        # #Using CUSTOM ACTIONS to install the requirements namely Python modules
-      - name: Install dependencies
-        uses: ./  
-        with:
-          requirements-file: 'requirements.txt'  
+      # Using Docker Compose to run the application
+      - name: Start services with Docker Compose
+        run: docker-compose up -d
 
-      - name: Run unit tests and generate text report
-        run: |
-          python -m unittest discover -s ./ -p 'test_app.py' 2>&1 | tee test-report.txt
+      - name: Install dependencies for tests
+        run: pip install -r requirements.txt  # You might need to install dependencies separately for the tests
+
+      - name: Run unit tests inside the Docker container
+        run: docker-compose exec redis python -m unittest discover -s ./ -p 'test_app.py' 2>&1 | tee test-report.txt
+
 
       - name: Archive test report
         uses: actions/upload-artifact@v2
         with:
           name: test-report
           path: test-report.txt  # Store the text report as an artifact
+
+     
