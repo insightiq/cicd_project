@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, jsonify
 import redis
 
 app = Flask(__name__)
-redis_db = redis.StrictRedis(host='localhost', port=6379, db=0)
+redis_db = redis.StrictRedis(host='redis', port=6379, db=0)
 
 @app.route('/')
 def index():
@@ -29,4 +29,4 @@ def retrieve_data(key):
         return jsonify({'error': 'Key not found'})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, host='0.0.0.0')
